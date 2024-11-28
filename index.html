@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>tim</title>
     <style>
+        /* Đảm bảo canvas chiếm toàn bộ màn hình và có thể co dãn */
         canvas {
             position: absolute;
             left: 0;
@@ -16,6 +17,7 @@
             z-index: 0;
         }
 
+        /* Thiết lập CSS cho văn bản */
         #text {
             position: absolute;
             z-index: 1;
@@ -25,6 +27,13 @@
             left: 50%;
             transform: translateX(-50%);
             text-align: center;
+        }
+
+        /* Điều chỉnh kích thước font cho điện thoại */
+        @media screen and (max-width: 768px) {
+            #text {
+                font-size: 24px; /* Font nhỏ hơn trên màn hình di động */
+            }
         }
     </style>
 </head>
@@ -168,9 +177,9 @@
 
             loop();
 
-            // Đảm bảo rằng sự kiện click chỉ được đăng ký một lần
+
             canvas.addEventListener('click', () => {
-                const audio = new Audio('audio/theanh1.mp3'); // Đảm bảo đường dẫn đúng
+                const audio = new Audio('audio/theanh1.mp3');
                 audio.play();
             });
         };
