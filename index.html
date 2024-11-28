@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Responsive Heart Animation with Audio</title>
+    <title>tim</title>
     <style>
         canvas {
             position: absolute;
@@ -15,6 +15,17 @@
             background-color: #2e2e2e;
             z-index: 0;
         }
+
+        #text {
+            position: absolute;
+            z-index: 1;
+            color: white;
+            font-size: 40px;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+        }
     </style>
 </head>
 
@@ -23,61 +34,63 @@
 
     <script>
         window.requestAnimationFrame =
+            window.__requestAnimationFrame ||
             window.requestAnimationFrame ||
             window.webkitRequestAnimationFrame ||
             window.mozRequestAnimationFrame ||
-            function (callback) {
-                window.setTimeout(callback, 1000 / 60);
-            };
+            window.oRequestAnimationFrame ||
+            window.msRequestAnimationFrame ||
+            (function () {
+                return function (callback) {
+                    var lastTime = 0;
+                    var currTime = Date.now();
+                    var timeToCall = Math.max(1, 33 - (currTime - lastTime));
+                    window.setTimeout(callback, timeToCall);
+                    lastTime = currTime + timeToCall;
+                };
+            })();
 
-        window.isDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
-            (navigator.userAgent || navigator.vendor || window.opera).toLowerCase()
-        );
-
-        var canvas = document.getElementById("heart");
-        var ctx = canvas.getContext("2d");
-
+        window.isDevice = (/android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(((navigator.userAgent || navigator.vendor || window.opera)).toLowerCase()));
         var loaded = false;
 
-        function init() {
+        var init = function () {
             if (loaded) return;
             loaded = true;
 
-            // Scale factor for mobile devices
-            var scaleFactor = window.isDevice ? 0.7 : 1;
-            var traceCount = window.isDevice ? 15 : 50;
-            var width = (canvas.width = window.innerWidth * scaleFactor);
-            var height = (canvas.height = window.innerHeight * scaleFactor);
+            var mobile = window.isDevice;
+            var koef = mobile ? 0.5 : 1;
+            var canvas = document.getElementById('heart');
+            var ctx = canvas.getContext('2d');
+            var width = canvas.width = koef * innerWidth;
+            var height = canvas.height = koef * innerHeight;
+            var rand = Math.random;
 
             ctx.fillStyle = "rgba(0,0,0,1)";
             ctx.fillRect(0, 0, width, height);
 
             var heartPosition = function (rad) {
-                return [
-                    Math.pow(Math.sin(rad), 3),
-                    -(15 * Math.cos(rad) - 5 * Math.cos(2 * rad) - 2 * Math.cos(3 * rad) - Math.cos(4 * rad)),
-                ];
+                return [Math.pow(Math.sin(rad), 3), -(15 * Math.cos(rad) - 5 * Math.cos(2 * rad) - 2 * Math.cos(3 * rad) - Math.cos(4 * rad))];
             };
 
             var scaleAndTranslate = function (pos, sx, sy, dx, dy) {
                 return [dx + pos[0] * sx, dy + pos[1] * sy];
             };
 
-            // Resize canvas dynamically
-            window.addEventListener("resize", function () {
-                width = canvas.width = window.innerWidth * scaleFactor;
-                height = canvas.height = window.innerHeight * scaleFactor;
+            window.addEventListener('resize', function () {
+                width = canvas.width = koef * innerWidth;
+                height = canvas.height = koef * innerHeight;
                 ctx.fillStyle = "rgba(0,0,0,1)";
                 ctx.fillRect(0, 0, width, height);
             });
 
+            var traceCount = mobile ? 20 : 50;
             var pointsOrigin = [];
             var i;
-            var dr = 0.1;
+            var dr = mobile ? 0.3 : 0.1;
 
-            for (i = 0; i < Math.PI * 2; i += dr)
-                pointsOrigin.push(scaleAndTranslate(heartPosition(i), 180 * scaleFactor, 11 * scaleFactor, 0, 0));
-
+            for (i = 0; i < Math.PI * 2; i += dr) pointsOrigin.push(scaleAndTranslate(heartPosition(i), 210, 13, 0, 0));
+            for (i = 0; i < Math.PI * 2; i += dr) pointsOrigin.push(scaleAndTranslate(heartPosition(i), 150, 9, 0, 0));
+            for (i = 0; i < Math.PI * 2; i += dr) pointsOrigin.push(scaleAndTranslate(heartPosition(i), 90, 5, 0, 0));
             var heartPointsCount = pointsOrigin.length;
 
             var targetPoints = [];
@@ -85,93 +98,86 @@
                 for (i = 0; i < pointsOrigin.length; i++) {
                     targetPoints[i] = [];
                     targetPoints[i][0] = kx * pointsOrigin[i][0] + width / 2;
-                    targetPoints[i][1] = ky * pointsOrigin[i][1] + height / 2.5; // Adjust heart position
+                    targetPoints[i][1] = ky * pointsOrigin[i][1] + height / 2;
                 }
             };
 
-            var particles = [];
+            var e = [];
             for (i = 0; i < heartPointsCount; i++) {
-                var x = Math.random() * width;
-                var y = Math.random() * height;
-                particles[i] = {
+                var x = rand() * width;
+                var y = rand() * height;
+                e[i] = {
                     vx: 0,
                     vy: 0,
                     R: 2,
-                    speed: Math.random() + 2,
-                    q: ~~(Math.random() * heartPointsCount),
+                    speed: rand() + 5,
+                    q: ~~(rand() * heartPointsCount),
                     D: 2 * (i % 2) - 1,
-                    force: 0.1 * Math.random() + 0.6,
-                    color: "hsla(0," + ~~(40 * Math.random() + 60) + "%," + ~~(60 * Math.random() + 20) + "%,.4)",
-                    trace: Array.from({ length: traceCount }, () => ({ x: x, y: y })),
+                    force: 0.2 * rand() + 0.7,
+                    f: "hsla(0," + ~~(40 * rand() + 60) + "%," + ~~(60 * rand() + 20) + "%,.3)",
+                    trace: []
                 };
+                for (var k = 0; k < traceCount; k++) e[i].trace[k] = { x: x, y: y };
             }
 
             var config = {
-                traceK: 0.3,
-                timeDelta: 0.02,
+                traceK: 0.4,
+                timeDelta: 0.01
             };
 
             var time = 0;
 
-            function loop() {
+            var loop = function () {
                 var n = -Math.cos(time);
                 pulse((1 + n) * 0.5, (1 + n) * 0.5);
-                time += config.timeDelta;
+                time += ((Math.sin(time)) < 0 ? 9 : (n > 0.8) ? 0.2 : 1) * config.timeDelta;
                 ctx.fillStyle = "rgba(0,0,0,0.1)";
                 ctx.fillRect(0, 0, width, height);
-                particles.forEach(function (particle) {
-                    var target = targetPoints[particle.q];
-                    var dx = particle.trace[0].x - target[0];
-                    var dy = particle.trace[0].y - target[1];
+                for (i = e.length; i--;) {
+                    var u = e[i];
+                    var q = targetPoints[u.q];
+                    var dx = u.trace[0].x - q[0];
+                    var dy = u.trace[0].y - q[1];
                     var length = Math.sqrt(dx * dx + dy * dy);
-
                     if (length < 10) {
-                        if (Math.random() > 0.95) particle.q = ~~(Math.random() * heartPointsCount);
+                        if (rand() > 0.95) u.q = ~~(rand() * heartPointsCount);
                         else {
-                            if (Math.random() > 0.99) particle.D *= -1;
-                            particle.q = (particle.q + particle.D + heartPointsCount) % heartPointsCount;
+                            if (rand() > 0.99) u.D *= -1;
+                            u.q = (u.q + u.D + heartPointsCount) % heartPointsCount;
                         }
                     }
-
-                    particle.vx += (-dx / length) * particle.speed;
-                    particle.vy += (-dy / length) * particle.speed;
-
-                    particle.trace[0].x += particle.vx;
-                    particle.trace[0].y += particle.vy;
-
-                    particle.vx *= particle.force;
-                    particle.vy *= particle.force;
-
-                    for (var k = 0; k < particle.trace.length - 1; ) {
-                        var T = particle.trace[k];
-                        var N = particle.trace[++k];
+                    u.vx += -dx / length * u.speed;
+                    u.vy += -dy / length * u.speed;
+                    u.trace[0].x += u.vx;
+                    u.trace[0].y += u.vy;
+                    u.vx *= u.force;
+                    u.vy *= u.force;
+                    for (k = 0; k < u.trace.length - 1;) {
+                        var T = u.trace[k];
+                        var N = u.trace[++k];
                         N.x -= config.traceK * (N.x - T.x);
                         N.y -= config.traceK * (N.y - T.y);
                     }
-
-                    ctx.fillStyle = particle.color;
-                    particle.trace.forEach(function (tracePoint) {
-                        ctx.fillRect(tracePoint.x, tracePoint.y, 1, 1);
-                    });
-                });
-
-                requestAnimationFrame(loop);
-            }
+                    ctx.fillStyle = u.f;
+                    for (k = 0; k < u.trace.length; k++) {
+                        ctx.fillRect(u.trace[k].x, u.trace[k].y, 1, 1);
+                    }
+                }
+                window.requestAnimationFrame(loop);
+            };
 
             loop();
 
-            // Play audio when the canvas is clicked
-            canvas.addEventListener("click", () => {
-                const audio = new Audio("audio/theanh1.mp3"); // Replace with your actual file path
+
+            canvas.addEventListener('click', () => {
+                const audio = new Audio('audio/theanh1.mp3');
                 audio.play();
             });
-        }
+        };
 
-        if (document.readyState === "complete" || document.readyState === "interactive") {
-            init();
-        } else {
-            document.addEventListener("DOMContentLoaded", init);
-        }
+        if (document.readyState === 'complete' || document.readyState === 'loaded' || document.readyState === 'interactive') init();
+        else document.addEventListener('DOMContentLoaded', init, false);
+
     </script>
 </body>
 
