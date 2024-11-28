@@ -1,0 +1,23 @@
+#text {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: white;
+    font-size: 24px;
+}
+
+#toggleAnimation {
+    position: absolute;
+    top: 100px;
+    left: 20px;
+    padding: 10px;
+    background-color: #008CBA;
+    color: white;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#toggleAnimation:hover {
+    background-color: #006f87;
+}
